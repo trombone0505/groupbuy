@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>原味千尋乳酪絲 團購填單</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f4f0; color: #1a1a1a; padding: 16px; }
+.wrap { max-width: 480px; margin: 0 auto; padding-bottom: 40px; }
+h1 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+.sub { font-size: 13px; color: #666; margin-bottom: 16px; line-height: 1.6; }
+.tag-g { display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:#E1F5EE;color:#0F6E56; }
+.tag-p { display:inline-block;font-size:11px;padding:2px 8px;border-radius:99px;background:#EEEDFE;color:#534AB7; }
+.section-title { font-size: 13px; font-weight: 600; color: #555; margin: 20px 0 8px; }
+.section-hint { font-size: 11px; font-weight: 400; color: #888; }
+.card { background: #fff; border: 1px solid #e8e6e0; border-radius: 12px; padding: 16px; margin-bottom: 10px; }
+label.field-label { display:block; font-size: 12px; font-weight: 600; color: #555; margin-bottom: 6px; }
+label.field-label .req { color: #e24b4a; }
+select, input[type=text], input[type=number], textarea {
+  width: 100%; font-size: 14px; padding: 8px 10px; border: 1px solid #ddd;
+  border-radius: 8px; background: #fff; color: #1a1a1a;
+  -webkit-appearance: none; appearance: none;
+}
+select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position: right 10px center; padding-right: 28px; }
+select:focus, input:focus { outline: none; border-color: #534AB7; }
+
+/* 共購池 */
+.pool-card { background:#fff; border:1px solid #e8e6e0; border-radius:12px; padding:14px 16px; margin-bottom:10px; }
+.pool-title { font-size:14px; font-weight:600; color:#1a1a1a; margin-bottom:2px; }
+.pool-sub { font-size:12px; color:#888; margin-bottom:10px; }
+.remain-badge { display:inline-block; font-size:11px; padding:2px 8px; border-radius:99px; margin-left:6px; }
+.remain-ok { background:#E1F5EE; color:#0F6E56; }
+.remain-warn { background:#FAEEDA; color:#633806; }
+.remain-none { background:#FCEBEB; color:#A32D2D; }
+.slot-list { display:flex; flex-direction:column; gap:5px; margin-bottom:10px; }
+.slot-row { display:flex; align-items:center; gap:8px; background:#f5f4f0; border-radius:8px; padding:6px 10px; font-size:13px; }
+.slot-row.mine { background:#EEEDFE; }
+.slot-name { flex:1; font-weight:600; }
+.slot-detail { font-size:12px; color:#666; }
+.slot-cost { font-size:13px; font-weight:600; min-width:40px; text-align:right; }
+.join-row { display:flex; align-items:center; gap:8px; margin-top:8px; padding-top:8px; border-top:1px solid #e8e6e0; }
+.join-row input { width:60px; font-size:13px; padding:6px 8px; text-align:center; }
+.join-btn { font-size:13px; padding:6px 14px; border:1px solid #534AB7; border-radius:8px; background:#EEEDFE; color:#534AB7; cursor:pointer; white-space:nowrap; }
+.join-btn:active { background:#534AB7; color:#fff; }
+.leave-btn { font-size:12px; padding:4px 10px; border:1px solid #F09595; border-radius:8px; background:#FCEBEB; color:#A32D2D; cursor:pointer; }
+
+/* 個人訂購 */
+.col-hdr { display:grid; grid-template-columns:1fr 58px 46px 56px; gap:6px; font-size:11px; color:#888; margin-bottom:4px; }
+.item-row { display:grid; grid-template-columns:1fr 58px 46px 56px; gap:6px; align-items:center; margin-bottom:7px; }
+.item-row select, .item-row input { font-size:12px; padding:5px 6px; }
+.item-row select { padding-right:22px; }
+.item-price { font-size:12px; font-weight:600; text-align:right; }
+.split-tag { font-size:10px; padding:1px 5px; border-radius:99px; background:#EEEDFE; color:#534AB7; display:block; text-align:right; margin-top:1px; }
+.del-btn { font-size:11px; color:#aaa; background:none; border:none; cursor:pointer; padding:0 2px; display:block; text-align:right; }
+.del-btn:hover { color:#e24b4a; }
+.add-item-btn { width:100%; font-size:12px; padding:6px; border:1px dashed #ccc; border-radius:8px; background:none; color:#888; cursor:pointer; margin-top:4px; }
+.add-item-btn:hover { background:#f5f4f0; }
+
+/* 小計 */
+.subtotal-box { background:#f5f4f0; border-radius:10px; padding:12px 14px; margin:14px 0; }
+.sub-row { display:flex; justify-content:space-between; font-size:13px; color:#666; padding:2px 0; }
+.sub-row.total-row { font-size:17px; font-weight:700; color:#1a1a1a; border-top:1px solid #ddd; padding-top:8px; margin-top:4px; }
+
+/* 取貨 */
+.radio-group { display:flex; flex-direction:column; gap:10px; }
+.radio-opt { display:flex; align-items:center; gap:10px; font-size:14px; cursor:pointer; }
+.radio-opt input[type=radio] { width:18px; height:18px; flex-shrink:0; accent-color:#534AB7; }
+
+/* 送出 */
+.submit-btn { width:100%; padding:14px; font-size:16px; font-weight:700; background:#534AB7; color:#fff; border:none; border-radius:12px; cursor:pointer; margin-top:4px; }
+.submit-btn:active { background:#3C3489; }
+.submit-btn:disabled { background:#aaa; cursor:not-allowed; }
+
+/* 成功畫面 */
+.success-box { display:none; text-align:center; padding:32px 20px; }
+.success-icon { font-size:48px; margin-bottom:12px; }
+.success-name { font-size:22px; font-weight:700; margin-bottom:4px; }
+.success-amt { font-size:32px; font-weight:700; color:#534AB7; margin:8px 0; }
+.success-note { font-size:13px; color:#888; margin-top:12px; }
+.reset-btn { margin-top:20px; font-size:13px; padding:8px 20px; border:1px solid #ccc; border-radius:8px; background:#fff; cursor:pointer; }
+
+/* 載入中 */
+.loading { text-align:center; color:#888; font-size:13px; padding:20px 0; }
+.spinner { display:inline-block; width:20px; height:20px; border:2px solid #e0e0e0; border-top-color:#534AB7; border-radius:50%; animation:spin 0.8s linear infinite; margin-bottom:6px; }
+@keyframes spin { to { transform:rotate(360deg); } }
+
+.error-msg { background:#FCEBEB; color:#A32D2D; border-radius:8px; padding:10px 14px; font-size:13px; margin:8px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>原味千尋乳酪絲</h1>
+  <p class="sub">
+    團購訂單　各口味 8入 NT$550<br>
+    <span class="tag-g">7-11 滿$800免運</span>　<span class="tag-p">宅配滿$1,800免運</span>
+  </p>
+
+  <div id="setup-card" class="card">
+    <label class="field-label"><span class="req">*</span> 你是誰？</label>
+    <select id="sel-name" onchange="onNameSelect()">
+      <option value="">— 選擇你的名字 —</option>
+      <option>小花</option><option>佳陵</option><option>幃庭</option>
+      <option>婷雅</option><option>肖芹</option><option>小星</option><option>雅騏</option>
+    </select>
+  </div>
+
+  <div id="main-area" style="display:none">
+
+    <div class="section-title">共購分包區　<span class="section-hint">加入認領幾個，費用自動分攤</span></div>
+    <div id="pools-area"><div class="loading"><div class="spinner"></div><br>載入共購資料...</div></div>
+
+    <div class="section-title" style="margin-top:20px">個人訂購區　<span class="section-hint">整包自己買</span></div>
+    <div class="card">
+      <div class="col-hdr"><span>商品</span><span style="text-align:center">數量</span><span style="text-align:center">平分</span><span style="text-align:right">費用</span></div>
+      <div id="items-container"></div>
+      <button class="add-item-btn" onclick="addItem()">+ 新增品項</button>
+    </div>
+
+    <div class="subtotal-box">
+      <div class="sub-row" id="row-pool" style="display:none"><span>共購分擔</span><span id="val-pool">$0</span></div>
+      <div class="sub-row" id="row-own" style="display:none"><span>個人購買</span><span id="val-own">$0</span></div>
+      <div class="sub-row total-row"><span>本人應付</span><span id="val-total">—</span></div>
+    </div>
+
+    <div class="card">
+      <label class="field-label"><span class="req">*</span> 取貨方式</label>
+      <div class="radio-group" style="margin-bottom:14px">
+        <label class="radio-opt"><input type="radio" name="pickup" value="711"> 7-11 門市取貨</label>
+        <label class="radio-opt"><input type="radio" name="pickup" value="home"> 宅配到公司</label>
+      </div>
+      <label class="field-label">備註</label>
+      <input type="text" id="note" placeholder="有其他說明請填這裡">
+    </div>
+
+    <div id="error-area"></div>
+    <button class="submit-btn" id="submit-btn" onclick="submitOrder()">送出訂單</button>
+  </div>
+
+  <div class="success-box" id="success-box">
+    <div class="success-icon">✓</div>
+    <div class="success-name" id="s-name"></div>
+    <div style="font-size:14px;color:#666">本人應付</div>
+    <div class="success-amt" id="s-amt"></div>
+    <div class="success-note">訂單已送出！團主收到後會跟你確認。</div>
+    <button class="reset-btn" onclick="resetForm()">重新填寫</button>
+  </div>
+</div>
+
+<script>
+// ====== 請將此行換成你的 Google Apps Script 網址 ======
+const API_URL = 'YOUR_APPS_SCRIPT_URL';
+// =====================================================
+
+const PRODUCTS = [
+  {cat:'乳酪絲',name:'原味乳酪絲（8入）',price:550,units:8},
+  {cat:'乳酪絲',name:'清境蜂蜜乳酪絲（8入）',price:550,units:8},
+  {cat:'乳酪絲',name:'普蘿旺斯羅勒乳酪絲（8入）',price:550,units:8},
+  {cat:'乳酪絲',name:'辛．乳酪絲（8入）',price:550,units:8},
+  {cat:'乳酪絲',name:'出雲不昧流抹茶乳酪絲（8入）',price:550,units:8},
+  {cat:'乳酪絲',name:'Oreo乳酪絲（8入）',price:550,units:8},
+  {cat:'乳酪絲',name:'可可芭蕾乳酪絲（8入）',price:550,units:8},
+  {cat:'乳酪絲',name:'春釀泡菜乳酪絲（8入）',price:550,units:8},
+  {cat:'乳酪絲',name:'鮮採玉米濃湯乳酪絲（8入）',price:550,units:8},
+  {cat:'其他',name:'Pork厚厚（豬肉條）',price:380,units:1},
+  {cat:'其他',name:'樂淘淘任性包 蔬果脆片（12入）',price:680,units:12},
+  {cat:'禮盒',name:'12號乳酪狂想曲禮盒',price:1380,units:1},
+  {cat:'禮盒',name:'黃金乳酪絲禮盒',price:980,units:1},
+  {cat:'禮盒',name:'乳酪絲×烏龍茶禮盒',price:1080,units:1},
+];
+
+let myName = '';
+let pools = [];
+let items = [{pid:-1, qty:1, split:1}];
+
+function buildProdOpts(sel) {
+  let h='<option value="-1">— 選擇商品 —</option>', cat='';
+  PRODUCTS.forEach((p,i) => {
+    if(p.cat!==cat){if(cat)h+='</optgroup>';h+=`<optgroup label="${p.cat}">`;cat=p.cat;}
+    h+=`<option value="${i}"${i===sel?' selected':''}>${p.name}　$${p.price}</option>`;
+  });
+  if(cat)h+='</optgroup>';
+  return h;
+}
+
+function poolTotalUnits(p){return(PRODUCTS[p.pid].units||8)*(p.qty||1);}
+function poolUsedUnits(p){return p.slots.reduce((s,sl)=>s+(sl.take||0),0);}
+function poolRemain(p){return Math.max(0,poolTotalUnits(p)-poolUsedUnits(p));}
+function slotCost(pool,slot){
+  const tu=poolTotalUnits(pool);
+  if(!tu||!slot.take)return 0;
+  return Math.ceil(PRODUCTS[pool.pid].price*(pool.qty||1)*slot.take/tu);
+}
+function myPoolTotal(){
+  return pools.reduce((s,p)=>{
+    const sl=p.slots.find(sl=>sl.name===myName);
+    return s+(sl?slotCost(p,sl):0);
+  },0);
+}
+
+async function api(action, data={}) {
+  const url = API_URL + '?action=' + action;
+  const res = await fetch(url, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(data)
+  });
+  return res.json();
+}
+
+async function loadPools() {
+  document.getElementById('pools-area').innerHTML = '<div class="loading"><div class="spinner"></div><br>載入中...</div>';
+  try {
+    const data = await api('getPools');
+    pools = data.pools || [];
+  } catch(e) {
+    pools = [];
+  }
+  renderPools();
+}
+
+function renderPools() {
+  const c = document.getElementById('pools-area');
+  if(!pools.length){
+    c.innerHTML='<p style="font-size:12px;color:#888;padding:4px 0 8px">（目前沒有共購分包）</p>';
+    updateSubtotal(); return;
+  }
+  c.innerHTML='';
+  pools.forEach((pool,pi)=>{
+    const pr=PRODUCTS[pool.pid];
+    const totalU=poolTotalUnits(pool);
+    const remain=poolRemain(pool);
+    const rc=remain===0?'remain-none':remain<=2?'remain-warn':'remain-ok';
+    const rt=remain===0?'已分完':`剩 ${remain} 個可認領`;
+    const mySlot=pool.slots.find(sl=>sl.name===myName);
+
+    let slotsHtml='<div class="slot-list">';
+    pool.slots.forEach(sl=>{
+      const isMe=sl.name===myName;
+      slotsHtml+=`<div class="slot-row${isMe?' mine':''}">
+        <span class="slot-name">${sl.name}</span>
+        <span class="slot-detail">${sl.take}個</span>
+        <span class="slot-cost">$${slotCost(pool,sl)}</span>
+      </div>`;
+    });
+    slotsHtml+='</div>';
+
+    let joinHtml='';
+    if(mySlot){
+      joinHtml=`<div class="join-row">
+        <span style="flex:1;font-size:13px;color:#534AB7;font-weight:600">你已認領 ${mySlot.take} 個（$${slotCost(pool,mySlot)}）</span>
+        <button class="leave-btn" onclick="leavePool(${pi})">取消</button>
+      </div>`;
+    } else if(remain>0){
+      joinHtml=`<div class="join-row">
+        <span style="font-size:13px;color:#555">我要認領</span>
+        <input type="number" min="1" max="${remain}" value="1" id="take-${pi}" style="width:60px">
+        <span style="font-size:12px;color:#888">個</span>
+        <button class="join-btn" onclick="joinPool(${pi})">加入</button>
+      </div>`;
+    }
+
+    const div=document.createElement('div');
+    div.className='pool-card';
+    div.innerHTML=`
+      <div class="pool-title">${pr.name} ×${pool.qty}包 <span class="remain-badge ${rc}">${rt}</span></div>
+      <div class="pool-sub">共 ${totalU} 個，每個約 $${Math.ceil(pr.price*(pool.qty||1)/totalU)}</div>
+      ${slotsHtml}${joinHtml}`;
+    c.appendChild(div);
+  });
+  updateSubtotal();
+}
+
+async function joinPool(pi){
+  const take=parseInt(document.getElementById(`take-${pi}`).value)||1;
+  if(take>poolRemain(pools[pi])){showError(`最多可認領 ${poolRemain(pools[pi])} 個`);return;}
+  try{
+    const data=await api('joinPool',{poolIndex:pi,name:myName,take});
+    pools=data.pools||pools;
+    renderPools();
+  }catch(e){showError('操作失敗，請重試');}
+}
+
+async function leavePool(pi){
+  try{
+    const data=await api('leavePool',{poolIndex:pi,name:myName});
+    pools=data.pools||pools;
+    renderPools();
+  }catch(e){showError('操作失敗，請重試');}
+}
+
+function renderItems(){
+  const c=document.getElementById('items-container');
+  c.innerHTML='';
+  if(items.length>1){
+    const hdr=document.createElement('div');
+    hdr.className='col-hdr';
+    hdr.innerHTML='<span>商品</span><span style="text-align:center">數量</span><span style="text-align:center">平分</span><span style="text-align:right">費用</span>';
+    c.appendChild(hdr);
+  }
+  items.forEach((it,i)=>{
+    const pr=it.pid>=0?PRODUCTS[it.pid]:null;
+    const sub=pr?Math.ceil(pr.price*it.qty/Math.max(1,it.split)):0;
+    const split=Math.max(1,it.split);
+    const row=document.createElement('div');
+    row.className='item-row';
+    row.innerHTML=`
+      <select onchange="setIt(${i},'pid',parseInt(this.value))">${buildProdOpts(it.pid)}</select>
+      <input type="number" min="1" max="20" value="${it.qty}" onchange="setIt(${i},'qty',parseInt(this.value)||1)">
+      <input type="number" min="1" max="10" value="${it.split}" onchange="setIt(${i},'split',parseInt(this.value)||1)" title="幾人平分">
+      <div>
+        <div class="item-price">${sub>0?'$'+sub:'—'}</div>
+        ${split>1&&pr?`<span class="split-tag">${split}人分</span>`:''}
+        ${items.length>1?`<button class="del-btn" onclick="delIt(${i})">✕</button>`:''}
+      </div>`;
+    c.appendChild(row);
+  });
+  updateSubtotal();
+}
+
+function setIt(i,f,v){items[i][f]=v;renderItems();}
+function addItem(){items.push({pid:-1,qty:1,split:1});renderItems();}
+function delIt(i){items.splice(i,1);renderItems();}
+
+function calcOwn(){
+  return items.reduce((s,it)=>it.pid>=0?s+Math.ceil(PRODUCTS[it.pid].price*it.qty/Math.max(1,it.split)):s,0);
+}
+
+function updateSubtotal(){
+  const own=calcOwn(), pool=myPoolTotal(), total=own+pool;
+  document.getElementById('row-pool').style.display=pool>0?'flex':'none';
+  document.getElementById('row-own').style.display=own>0?'flex':'none';
+  document.getElementById('val-pool').textContent='$'+pool.toLocaleString();
+  document.getElementById('val-own').textContent='$'+own.toLocaleString();
+  document.getElementById('val-total').textContent=total>0?'$'+total.toLocaleString():'—';
+}
+
+function showError(msg){
+  document.getElementById('error-area').innerHTML=`<div class="error-msg">${msg}</div>`;
+  setTimeout(()=>document.getElementById('error-area').innerHTML='',3000);
+}
+
+async function onNameSelect(){
+  myName=document.getElementById('sel-name').value;
+  if(!myName){document.getElementById('main-area').style.display='none';return;}
+  document.getElementById('main-area').style.display='block';
+  items=[{pid:-1,qty:1,split:1}];
+  renderItems();
+  await loadPools();
+}
+
+async function submitOrder(){
+  if(!myName){showError('請選擇名字');return;}
+  const pickup=document.querySelector('input[name=pickup]:checked');
+  if(!pickup){showError('請選擇取貨方式');return;}
+  const own=calcOwn(), poolAmt=myPoolTotal();
+  if(!own&&!poolAmt){showError('請至少選擇一項商品或加入共購');return;}
+
+  const btn=document.getElementById('submit-btn');
+  btn.disabled=true; btn.textContent='送出中...';
+
+  const order={
+    name:myName,
+    items:items.filter(it=>it.pid>=0).map(it=>({
+      product:PRODUCTS[it.pid].name, price:PRODUCTS[it.pid].price,
+      qty:it.qty, split:it.split,
+      subtotal:Math.ceil(PRODUCTS[it.pid].price*it.qty/Math.max(1,it.split))
+    })),
+    poolItems:pools.filter(p=>p.slots.some(sl=>sl.name===myName)).map(p=>{
+      const sl=p.slots.find(sl=>sl.name===myName);
+      return {product:PRODUCTS[p.pid].name, take:sl.take, subtotal:slotCost(p,sl)};
+    }),
+    pickup:pickup.value,
+    note:document.getElementById('note').value,
+    ownTotal:own, poolTotal:poolAmt, total:own+poolAmt,
+    time:new Date().toLocaleString('zh-TW')
+  };
+
+  try{
+    await api('submitOrder', order);
+    document.getElementById('setup-card').style.display='none';
+    document.getElementById('main-area').style.display='none';
+    btn.style.display='none';
+    document.getElementById('s-name').textContent=myName;
+    document.getElementById('s-amt').textContent='$'+(own+poolAmt).toLocaleString();
+    document.getElementById('success-box').style.display='block';
+  }catch(e){
+    showError('送出失敗，請重試');
+    btn.disabled=false; btn.textContent='送出訂單';
+  }
+}
+
+function resetForm(){
+  myName=''; items=[{pid:-1,qty:1,split:1}]; pools=[];
+  document.getElementById('sel-name').value='';
+  document.querySelectorAll('input[name=pickup]').forEach(r=>r.checked=false);
+  document.getElementById('note').value='';
+  document.getElementById('setup-card').style.display='block';
+  document.getElementById('main-area').style.display='none';
+  document.getElementById('success-box').style.display='none';
+  document.getElementById('submit-btn').style.display='block';
+  document.getElementById('submit-btn').disabled=false;
+  document.getElementById('submit-btn').textContent='送出訂單';
+  renderItems();
+}
+
+renderItems();
+</script>
+</body>
+</html>
