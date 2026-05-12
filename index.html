@@ -199,12 +199,9 @@ function myPoolTotal(){
 }
 
 async function api(action, data={}) {
-  const url = API_URL + '?action=' + action;
-  const res = await fetch(url, {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify(data)
-  });
+  const encoded = encodeURIComponent(JSON.stringify(data));
+  const url = API_URL + '?action=' + action + '&data=' + encoded;
+  const res = await fetch(url);
   return res.json();
 }
 
