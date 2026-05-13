@@ -102,7 +102,11 @@ select:focus, input:focus { outline: none; border-color: #534AB7; }
       <option value="">— 選擇你的名字 —</option>
       <option>小花</option><option>佳陵</option><option>幃庭</option>
       <option>婷雅</option><option>肖芹</option><option>小星</option><option>雅騏</option>
+      <option value="__custom__">✏️ 自行輸入名字...</option>
     </select>
+    <div id="custom-name-area" style="display:none;margin-top:10px">
+      <input type="text" id="custom-name-input" placeholder="請輸入你的名字" oninput="onCustomNameInput()" style="font-size:14px;padding:8px 10px;border:1px solid #ddd;border-radius:8px;width:100%">
+    </div>
   </div>
 
   <div id="main-area" style="display:none">
@@ -351,8 +355,32 @@ function showError(msg){
 }
 
 async function onNameSelect(){
-  myName=document.getElementById('sel-name').value;
+  const val = document.getElementById('sel-name').value;
+  const customArea = document.getElementById('custom-name-area');
+  const customInput = document.getElementById('custom-name-input');
+  if(val === '__custom__'){
+    customArea.style.display='block';
+    customInput.focus();
+    document.getElementById('main-area').style.display='none';
+    myName='';
+    return;
+  }
+  customArea.style.display='none';
+  myName = val;
   if(!myName){document.getElementById('main-area').style.display='none';return;}
+  document.getElementById('main-area').style.display='block';
+  items=[{pid:-1,qty:1,split:1}];
+  renderItems();
+  await loadPools();
+}
+
+async function onCustomNameInput(){
+  const val = document.getElementById('custom-name-input').value.trim();
+  myName = val;
+  if(!val){
+    document.getElementById('main-area').style.display='none';
+    return;
+  }
   document.getElementById('main-area').style.display='block';
   items=[{pid:-1,qty:1,split:1}];
   renderItems();
@@ -383,7 +411,7 @@ async function submitOrder(){
     pickup:pickup.value,
     note:document.getElementById('note').value,
     ownTotal:own, poolTotal:poolAmt, total:own+poolAmt,
-    time:new Date().toLocaleString('zh-TW')
+    time:new Date().toLocaleString('zh-TW',{timeZone:'Asia/Taipei'})
   };
 
   try{
@@ -403,6 +431,8 @@ async function submitOrder(){
 function resetForm(){
   myName=''; items=[{pid:-1,qty:1,split:1}]; pools=[];
   document.getElementById('sel-name').value='';
+  document.getElementById('custom-name-input').value='';
+  document.getElementById('custom-name-area').style.display='none';
   document.querySelectorAll('input[name=pickup]').forEach(r=>r.checked=false);
   document.getElementById('note').value='';
   document.getElementById('setup-card').style.display='block';
