@@ -154,9 +154,23 @@ function slotCost(pool,slot){
   return Math.ceil(PRODUCTS[pool.pid].price*(pool.qty||1)*slot.take/tu);
 }
 
-async function api(action,data={}){
-  const res=await fetch(API_URL+'?action='+action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
-  return res.json();
+async function api(action, data={}) {
+  return new Promise((resolve, reject) => {
+    const cbName = '_cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    window[cbName] = function(result) {
+      delete window[cbName];
+      document.getElementById(cbName) && document.getElementById(cbName).remove();
+      resolve(result);
+    };
+    const encoded = encodeURIComponent(JSON.stringify(data));
+    const url = API_URL + '?action=' + action + '&data=' + encoded + '&callback=' + cbName;
+    const s = document.createElement('script');
+    s.id = cbName;
+    s.src = url;
+    s.onerror = () => { delete window[cbName]; s.remove(); reject(new Error('API error')); };
+    document.head.appendChild(s);
+    setTimeout(() => { if(window[cbName]){ delete window[cbName]; s.remove(); reject(new Error('timeout')); }}, 10000);
+  });
 }
 
 async function loadPools(){
