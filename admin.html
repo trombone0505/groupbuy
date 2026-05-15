@@ -392,13 +392,11 @@ function copyVendor(){
 
   const sorted=Object.entries(tally).sort((a,b)=>b[1].qty-a[1].qty);
   const grandTotal=sorted.reduce((s,[,v])=>s+v.qty*v.price,0);
-  const lines=['【原味千尋 廠商訂購清單】
-'];
-  sorted.forEach(([name,v])=>lines.push(`${name}  ×${v.qty}包  $${(v.qty*v.price).toLocaleString()}`));
-  lines.push('\n訂購總金額：$'+grandTotal.toLocaleString());
-  lines.push(`總包數：${sorted.reduce((s,[,v])=>s+v.qty,0)} 包`);
-  navigator.clipboard.writeText(lines.join('
-')).then(()=>{
+  const lines=['【原味千尋 廠商訂購清單】'];
+  sorted.forEach(([name,v])=>lines.push(name+'  x'+v.qty+'包  $'+(v.qty*v.price).toLocaleString()));
+  lines.push('訂購總金額：$'+grandTotal.toLocaleString());
+  lines.push('總包數：'+sorted.reduce((s,[,v])=>s+v.qty,0)+' 包');
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>{
     const m=document.getElementById('copied-vendor');m.style.display='block';
     setTimeout(()=>m.style.display='none',2500);
   });
