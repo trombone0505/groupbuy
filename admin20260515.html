@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>團購後台 – 原味千尋</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f5f4f0; color: #1a1a1a; padding: 16px; }
+.wrap { max-width: 520px; margin: 0 auto; padding-bottom: 40px; }
+h1 { font-size: 18px; font-weight: 700; margin-bottom: 2px; }
+.sub { font-size: 13px; color: #888; margin-bottom: 16px; }
+.section-title { font-size: 13px; font-weight: 700; color: #555; margin: 20px 0 8px; display:flex; justify-content:space-between; align-items:center; }
+.card { background: #fff; border: 1px solid #e8e6e0; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
+
+/* 統計 */
+.stats { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin-bottom:12px; }
+.stat { background:#fff; border:1px solid #e8e6e0; border-radius:10px; padding:12px 14px; }
+.stat-label { font-size:12px; color:#888; margin-bottom:4px; }
+.stat-val { font-size:22px; font-weight:700; }
+.gap-msg { font-size:13px; padding:8px 12px; border-radius:8px; margin-bottom:10px; }
+.gap-ok { background:#E1F5EE; color:#0F6E56; }
+.gap-warn { background:#FAEEDA; color:#633806; }
+.prog-wrap { margin-bottom:14px; }
+.prog-label { display:flex; justify-content:space-between; font-size:11px; color:#888; margin-bottom:3px; }
+.prog-track { height:5px; background:#e8e6e0; border-radius:99px; overflow:hidden; margin-bottom:10px; }
+.prog-fill { height:100%; border-radius:99px; transition:width 0.3s; }
+
+/* 共購池 */
+.pool-card { background:#fff; border:1px solid #e8e6e0; border-radius:12px; padding:14px 16px; margin-bottom:10px; }
+.pool-title { font-size:14px; font-weight:700; margin-bottom:2px; }
+.pool-sub { font-size:12px; color:#888; margin-bottom:10px; }
+.remain-badge { display:inline-block; font-size:11px; padding:2px 7px; border-radius:99px; margin-left:6px; }
+.remain-ok{background:#E1F5EE;color:#0F6E56;} .remain-warn{background:#FAEEDA;color:#633806;} .remain-none{background:#FCEBEB;color:#A32D2D;}
+.slot-table { width:100%; font-size:13px; border-collapse:collapse; }
+.slot-table td { padding:5px 0; border-bottom:1px solid #f0ede8; }
+.slot-table tr:last-child td { border-bottom:none; }
+.slot-table .n { font-weight:600; } .slot-table .t { color:#888; font-size:12px; } .slot-table .c { text-align:right; font-weight:600; }
+.open-row { font-style:italic; color:#aaa; font-size:12px; }
+.pool-footer { display:flex; justify-content:space-between; align-items:center; margin-top:10px; padding-top:8px; border-top:1px solid #e8e6e0; font-size:12px; color:#888; }
+
+/* 新增共購表單 */
+.add-form { background:#fff; border:1px dashed #ccc; border-radius:12px; padding:14px 16px; margin-bottom:10px; display:none; }
+select, input[type=number] {
+  font-size:13px; padding:7px 10px; border:1px solid #ddd; border-radius:8px;
+  background:#fff; -webkit-appearance:none; appearance:none;
+}
+select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 10px center; padding-right:28px; }
+.field-label { font-size:12px; font-weight:600; color:#555; margin-bottom:5px; display:block; }
+.form-row { display:grid; grid-template-columns:1fr 90px; gap:10px; margin-bottom:10px; align-items:end; }
+.preview-text { font-size:12px; color:#888; margin-top:-4px; margin-bottom:10px; }
+.add-pool-btn { font-size:13px; padding:8px 16px; border:1px solid #534AB7; border-radius:8px; background:#EEEDFE; color:#534AB7; cursor:pointer; font-weight:600; }
+.add-pool-btn:active { background:#534AB7; color:#fff; }
+.toggle-btn { width:100%; font-size:13px; padding:8px; border:1px dashed #ccc; border-radius:8px; background:none; color:#888; cursor:pointer; margin-bottom:4px; }
+.toggle-btn:hover { background:#f5f4f0; }
+
+/* 訂單 */
+.order-card { background:#fff; border:1px solid #e8e6e0; border-radius:12px; padding:14px 16px; margin-bottom:10px; }
+.order-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px; }
+.order-name { font-size:15px; font-weight:700; }
+.order-time { font-size:11px; color:#aaa; margin-top:2px; }
+.order-amt { font-size:16px; font-weight:700; }
+.tag { display:inline-block; font-size:11px; padding:2px 6px; border-radius:99px; margin-left:4px; }
+.tag-711{background:#E1F5EE;color:#0F6E56;} .tag-home{background:#EEEDFE;color:#534AB7;} .tag-pool{background:#FAEEDA;color:#633806;}
+.item-line { display:flex; justify-content:space-between; font-size:13px; padding:4px 0; border-bottom:1px solid #f0ede8; color:#555; }
+.item-line:last-child { border-bottom:none; }
+.item-line span:last-child { font-weight:600; color:#1a1a1a; }
+.icon-btn { font-size:11px; color:#aaa; background:none; border:none; cursor:pointer; padding:2px 4px; }
+.icon-btn:hover { color:#e24b4a; }
+.action-btn { font-size:12px; padding:5px 12px; border:1px solid #ddd; border-radius:8px; background:#fff; cursor:pointer; }
+.action-btn:hover { background:#f5f4f0; }
+.empty { text-align:center; padding:24px; color:#aaa; font-size:13px; }
+.copy-btn { width:100%; font-size:13px; font-weight:600; padding:10px; background:#534AB7; color:#fff; border:none; border-radius:10px; cursor:pointer; margin-top:6px; }
+.copy-btn:active { background:#3C3489; }
+.copied { font-size:12px; color:#1D9E75; text-align:center; margin-top:4px; display:none; }
+.loading { text-align:center; color:#888; font-size:13px; padding:20px 0; }
+.spinner { display:inline-block; width:18px; height:18px; border:2px solid #e0e0e0; border-top-color:#534AB7; border-radius:50%; animation:spin 0.8s linear infinite; }
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>團主後台</h1>
+  <p class="sub" id="last-refresh">原味千尋乳酪絲團購</p>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-label">已填單人數</div><div class="stat-val" id="s-count">—</div></div>
+    <div class="stat"><div class="stat-label">商品總金額</div><div class="stat-val" id="s-total">—</div></div>
+  </div>
+  <div id="gap-msg" class="gap-msg gap-warn">載入中...</div>
+  <div class="prog-wrap">
+    <div class="prog-label"><span>7-11 免運 $800</span><span id="p7-lbl">—</span></div>
+    <div class="prog-track"><div class="prog-fill" id="p7" style="width:0%;background:#1D9E75"></div></div>
+    <div class="prog-label"><span>宅配免運 $1,800</span><span id="ph-lbl">—</span></div>
+    <div class="prog-track"><div class="prog-fill" id="ph" style="width:0%;background:#534AB7"></div></div>
+  </div>
+
+  <div class="section-title">
+    <span>共購分包管理</span>
+    <button class="action-btn" onclick="refreshAll()">重新整理</button>
+  </div>
+  <div id="pools-area"><div class="loading"><span class="spinner"></span></div></div>
+  <button class="toggle-btn" id="toggle-btn" onclick="toggleForm()">+ 新增共購分包</button>
+  <div class="add-form" id="add-form">
+    <label class="field-label">選商品</label>
+    <select id="new-pid" onchange="updatePreview()" style="width:100%;margin-bottom:10px"></select>
+    <div class="form-row">
+      <div>
+        <label class="field-label">買幾包</label>
+        <input type="number" id="new-qty" min="1" max="20" value="1" oninput="updatePreview()" style="width:100%">
+      </div>
+      <button class="add-pool-btn" onclick="addPool()" style="height:36px">新增</button>
+    </div>
+    <div class="preview-text" id="new-preview"></div>
+  </div>
+
+  <div class="section-title"><span>各人訂單</span></div>
+  <div id="orders-area"><div class="loading"><span class="spinner"></span></div></div>
+
+  <div class="section-title" style="margin-top:1.5rem"><span>向廠商訂購清單</span></div>
+  <div id="vendor-area"></div>
+  <button class="copy-btn" onclick="copyVendor()" style="margin-bottom:6px">複製廠商訂購清單 ↗</button>
+  <div class="copied" id="copied-vendor">已複製！</div>
+
+  <div class="section-title" style="margin-top:1rem"><span>各人訂單摘要</span></div>
+  <button class="copy-btn" onclick="copyAll()">複製所有訂單摘要 ↗</button>
+  <div class="copied" id="copied">已複製！</div>
+</div>
+
+<script>
+// ====== 請將此行換成你的 Google Apps Script 網址 ======
+const API_URL = 'https://script.google.com/macros/s/AKfycbyXn1KMSEfgy_Hlji1LwT5R7hTFuypj1sEtsc12IT4e0eUkbt8pKiNZ0PK3BOqT-l51hQ/exec';
+// =====================================================
+
+const PRODUCTS = [
+  {cat:'乳酪絲',name:'原味乳酪絲（8入）',price:550,units:8},
+  {cat:'乳酪絲',name:'清境蜂蜜乳酪絲（8入）',price:550,units:8},
+  {cat:'乳酪絲',name:'普蘿旺斯羅勒乳酪絲（8入）',price:550,units:8},
+  {cat:'乳酪絲',name:'辛．乳酪絲（8入）',price:550,units:8},
+  {cat:'乳酪絲',name:'出雲不昧流抹茶乳酪絲（8入）',price:550,units:8},
+  {cat:'乳酪絲',name:'Oreo乳酪絲（8入）',price:550,units:8},
+  {cat:'乳酪絲',name:'可可芭蕾乳酪絲（8入）',price:550,units:8},
+  {cat:'乳酪絲',name:'春釀泡菜乳酪絲（8入）',price:550,units:8},
+  {cat:'乳酪絲',name:'鮮採玉米濃湯乳酪絲（8入）',price:550,units:8},
+  {cat:'乳酪絲',name:'明太子風味乳酪絲（8入）',price:550,units:8},
+  {cat:'其他',name:'Pork厚厚（豬肉條）',price:380,units:1},
+  {cat:'其他',name:'樂淘淘任性包 蔬果脆片（12入）',price:680,units:12},
+  {cat:'禮盒',name:'12號乳酪狂想曲禮盒',price:1380,units:1},
+  {cat:'禮盒',name:'黃金乳酪絲禮盒',price:980,units:1},
+  {cat:'禮盒',name:'乳酪絲×烏龍茶禮盒',price:1080,units:1},
+];
+
+let pools=[], orders=[];
+
+function poolTotalUnits(p){return(PRODUCTS[p.pid].units||8)*(p.qty||1);}
+function poolUsedUnits(p){return p.slots.reduce((s,sl)=>s+(sl.take||0),0);}
+function poolRemain(p){return Math.max(0,poolTotalUnits(p)-poolUsedUnits(p));}
+function slotCost(pool,slot){
+  const tu=poolTotalUnits(pool);
+  if(!tu||!slot.take)return 0;
+  return Math.ceil(PRODUCTS[pool.pid].price*(pool.qty||1)*slot.take/tu);
+}
+
+async function api(action, data={}) {
+  return new Promise((resolve, reject) => {
+    const cbName = '_cb_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+    window[cbName] = function(result) {
+      delete window[cbName];
+      document.getElementById(cbName) && document.getElementById(cbName).remove();
+      resolve(result);
+    };
+    const encoded = encodeURIComponent(JSON.stringify(data));
+    const url = API_URL + '?action=' + action + '&data=' + encoded + '&callback=' + cbName;
+    const s = document.createElement('script');
+    s.id = cbName;
+    s.src = url;
+    s.onerror = () => { delete window[cbName]; s.remove(); reject(new Error('API error')); };
+    document.head.appendChild(s);
+    setTimeout(() => { if(window[cbName]){ delete window[cbName]; s.remove(); reject(new Error('timeout')); }}, 10000);
+  });
+}
+
+async function loadPools(){
+  try{const d=await api('getPools');pools=d.pools||[];}catch(e){pools=[];}
+}
+async function loadOrders(){
+  try{const d=await api('getOrders');orders=(d.orders||[]).sort((a,b)=>a.name.localeCompare(b.name,'zh'));}catch(e){orders=[];}
+}
+
+async function refreshAll(){
+  document.getElementById('pools-area').innerHTML='<div class="loading"><span class="spinner"></span></div>';
+  document.getElementById('orders-area').innerHTML='<div class="loading"><span class="spinner"></span></div>';
+  await Promise.all([loadPools(),loadOrders()]);
+  renderPools(); renderOrders(); renderVendor(); updateSummary();
+  document.getElementById('last-refresh').textContent='更新於 '+new Date().toLocaleTimeString('zh-TW');
+}
+
+function renderPools(){
+  const c=document.getElementById('pools-area');
+  if(!pools.length){c.innerHTML='<p style="font-size:12px;color:#aaa;padding:4px 0 8px">（尚未設定）</p>';return;}
+  c.innerHTML='';
+  pools.forEach((pool,pi)=>{
+    const pr=PRODUCTS[pool.pid];
+    const totalU=poolTotalUnits(pool),usedU=poolUsedUnits(pool),remain=poolRemain(pool);
+    const rc=remain===0?'remain-none':remain<=2?'remain-warn':'remain-ok';
+    const rt=remain===0?'已分完':`剩 ${remain} 個`;
+    let rows='';
+    pool.slots.forEach(sl=>{
+      rows+=`<tr><td class="n">${sl.name}</td><td class="t">${sl.take}個</td><td class="c">$${slotCost(pool,sl)}</td>
+        <td style="text-align:right"><button class="icon-btn" onclick="removeSlot(${pi},'${sl.name}')">✕</button></td></tr>`;
+    });
+    if(remain>0)rows+=`<tr><td class="open-row" colspan="4">剩 ${remain} 個待認領...</td></tr>`;
+    const div=document.createElement('div');div.className='pool-card';
+    div.innerHTML=`
+      <div class="pool-title">${pr.name} ×${pool.qty}包 <span class="remain-badge ${rc}">${rt}</span></div>
+      <div class="pool-sub">共 ${totalU} 個 / 已認領 ${usedU} 個 / 總價 $${(pr.price*(pool.qty||1)).toLocaleString()}</div>
+      <table class="slot-table">${rows}</table>
+      <div class="pool-footer"><span>每個均價 $${Math.ceil(pr.price*(pool.qty||1)/totalU)}</span>
+        <button class="icon-btn" style="border:1px solid #ddd;border-radius:6px;padding:3px 8px;font-size:11px" onclick="deletePool(${pi})">刪除分包</button>
+      </div>`;
+    c.appendChild(div);
+  });
+}
+
+async function removeSlot(pi,name){
+  if(!confirm(`移除 ${name} 的認領？`))return;
+  try{const d=await api('leavePool',{poolIndex:pi,name});pools=d.pools||pools;renderPools();updateSummary();}catch(e){alert('操作失敗');}
+}
+async function deletePool(pi){
+  if(!confirm('確定刪除這個共購分包？'))return;
+  try{const d=await api('deletePool',{poolIndex:pi});pools=d.pools||pools;renderPools();updateSummary();}catch(e){alert('操作失敗');}
+}
+
+function buildProdOpts(el){
+  let h='',cat='';
+  PRODUCTS.forEach((p,i)=>{
+    if(p.cat!==cat){if(cat)h+='</optgroup>';h+=`<optgroup label="${p.cat}">`;cat=p.cat;}
+    h+=`<option value="${i}">${p.name}　$${p.price}</option>`;
+  });
+  if(cat)h+='</optgroup>';
+  el.innerHTML=h;
+}
+function updatePreview(){
+  const pid=parseInt(document.getElementById('new-pid').value)||0;
+  const qty=parseInt(document.getElementById('new-qty').value)||1;
+  const pr=PRODUCTS[pid],units=(pr.units||8)*qty;
+  document.getElementById('new-preview').textContent=`共 ${units} 個，每個約 $${Math.ceil(pr.price*qty/units)}，總價 $${(pr.price*qty).toLocaleString()}`;
+}
+function toggleForm(){
+  const f=document.getElementById('add-form'),btn=document.getElementById('toggle-btn');
+  const show=f.style.display==='none'||f.style.display==='';
+  f.style.display=show?'block':'none';
+  btn.textContent=show?'收起':'+ 新增共購分包';
+  if(show)updatePreview();
+}
+async function addPool(){
+  const pid=parseInt(document.getElementById('new-pid').value);
+  const qty=parseInt(document.getElementById('new-qty').value)||1;
+  try{const d=await api('addPool',{pid,qty});pools=d.pools||pools;renderPools();updateSummary();
+    document.getElementById('add-form').style.display='none';
+    document.getElementById('toggle-btn').textContent='+ 新增共購分包';
+  }catch(e){alert('新增失敗');}
+}
+
+function renderOrders(){
+  const c=document.getElementById('orders-area');
+  if(!orders.length){c.innerHTML='<div class="empty">還沒有人填單</div>';return;}
+  c.innerHTML='';
+  orders.forEach(o=>{
+    const ptag=o.pickup==='711'?'<span class="tag tag-711">7-11</span>':'<span class="tag tag-home">宅配</span>';
+    let lines='';
+    (o.items||[]).forEach(it=>{
+      const sp=it.split>1?`<span class="tag">${it.split}人分</span>`:'';
+      lines+=`<div class="item-line"><span>${it.product} ×${it.qty}${sp}</span><span>$${it.subtotal}</span></div>`;
+    });
+    (o.poolItems||[]).forEach(it=>{
+      lines+=`<div class="item-line"><span>${it.product} ×${it.take}個<span class="tag tag-pool">共購</span></span><span>$${it.subtotal}</span></div>`;
+    });
+    if(o.note)lines+=`<div class="item-line"><span style="color:#aaa">備註：${o.note}</span><span></span></div>`;
+    const div=document.createElement('div');div.className='order-card';
+    div.innerHTML=`
+      <div class="order-header">
+        <div><div class="order-name">${o.name} ${ptag}</div><div class="order-time">${new Date(o.time).toLocaleString('zh-TW',{timeZone:'Asia/Taipei'}) || o.time}</div></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="order-amt">$${o.total.toLocaleString()}</div>
+          <button class="icon-btn" onclick="deleteOrder('${o.name}')">✕</button>
+        </div>
+      </div>${lines}`;
+    c.appendChild(div);
+  });
+}
+
+async function deleteOrder(name){
+  if(!confirm(`確定刪除 ${name} 的訂單？`))return;
+  try{await api('deleteOrder',{name});await loadOrders();renderOrders();updateSummary();}catch(e){alert('刪除失敗');}
+}
+
+function renderVendor(){
+  const c = document.getElementById('vendor-area');
+  if(!orders.length && !pools.length){
+    c.innerHTML='<div class="empty">尚無訂單</div>';
+    return;
+  }
+
+  // 統計各商品總包數
+  const tally = {}; // key: product name, value: {qty, unit_price, sources:[]}
+
+  // 來自個人訂購（整包，split=1 才算完整一包；split>1 表示多人共買，只加一次）
+  // 改用 Set 追蹤已計算的平分群組
+  const splitGroups = {}; // key: "productName_splitCount", value: total qty seen
+
+  orders.forEach(o => {
+    (o.items||[]).forEach(it => {
+      if(!tally[it.product]) tally[it.product]={qty:0, price:it.price||550, sources:[]};
+      const split = it.split||1;
+      if(split === 1){
+        tally[it.product].qty += (it.qty||1);
+        tally[it.product].sources.push(o.name+'×'+(it.qty||1)+'包');
+      } else {
+        // 平分：只算一份，用 productName+split+qty 做 key 避免重複
+        // 此處每人各自填了平分，所以 qty 包數每人都填，取平均後只加一次
+        // 最簡單：以第一個人填的 qty 為準（其他人 split 相同視為同一包）
+        const gk = it.product+'__'+split+'__'+(it.qty||1);
+        if(!splitGroups[gk]){
+          splitGroups[gk] = true;
+          tally[it.product].qty += (it.qty||1);
+          tally[it.product].sources.push('（'+split+'人平分）×'+(it.qty||1)+'包');
+        }
+      }
+    });
+  });
+
+  // 來自共購分包（整包，一包就是一包）
+  pools.forEach(pool => {
+    const pr = PRODUCTS[pool.pid];
+    if(!tally[pr.name]) tally[pr.name]={qty:0, price:pr.price, sources:[]};
+    tally[pr.name].qty += (pool.qty||1);
+    tally[pr.name].sources.push('共購分包×'+(pool.qty||1)+'包');
+  });
+
+  if(!Object.keys(tally).length){
+    c.innerHTML='<div class="empty">尚無訂單資料</div>';
+    return;
+  }
+
+  // 計算總金額
+  const grandTotal = Object.values(tally).reduce((s,v)=>s+v.qty*v.price,0);
+
+  let html = '';
+  // 按訂購量排序
+  const sorted = Object.entries(tally).sort((a,b)=>b[1].qty-a[1].qty);
+  sorted.forEach(([name, v])=>{
+    html += `<div class="order-card" style="margin-bottom:8px">
+      <div class="order-header">
+        <div>
+          <div class="order-name" style="font-size:14px">${name}</div>
+          <div class="order-time">${v.sources.join('、')}</div>
+        </div>
+        <div style="text-align:right">
+          <div class="order-amt" style="font-size:15px">${v.qty} 包</div>
+          <div style="font-size:12px;color:var(--color-text-secondary)">$${(v.qty*v.price).toLocaleString()}</div>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  html += `<div style="background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:4px">
+    <span style="font-size:13px;color:var(--color-text-secondary)">訂購總金額</span>
+    <span style="font-size:17px;font-weight:500;color:var(--color-text-primary)">$${grandTotal.toLocaleString()}</span>
+  </div>`;
+
+  c.innerHTML = html;
+}
+
+function copyVendor(){
+  if(!orders.length && !pools.length){alert('尚無訂單');return;}
+  const tally = {};
+  const splitGroups = {};
+
+  orders.forEach(o=>{
+    (o.items||[]).forEach(it=>{
+      if(!tally[it.product]) tally[it.product]={qty:0,price:it.price||550};
+      const split=it.split||1;
+      if(split===1){
+        tally[it.product].qty+=(it.qty||1);
+      } else {
+        const gk=it.product+'__'+split+'__'+(it.qty||1);
+        if(!splitGroups[gk]){ splitGroups[gk]=true; tally[it.product].qty+=(it.qty||1); }
+      }
+    });
+  });
+  pools.forEach(pool=>{
+    const pr=PRODUCTS[pool.pid];
+    if(!tally[pr.name]) tally[pr.name]={qty:0,price:pr.price};
+    tally[pr.name].qty+=(pool.qty||1);
+  });
+
+  const sorted=Object.entries(tally).sort((a,b)=>b[1].qty-a[1].qty);
+  const grandTotal=sorted.reduce((s,[,v])=>s+v.qty*v.price,0);
+  const lines=['【原味千尋 廠商訂購清單】
+'];
+  sorted.forEach(([name,v])=>lines.push(`${name}  ×${v.qty}包  $${(v.qty*v.price).toLocaleString()}`));
+  lines.push(`
+訂購總金額：$${grandTotal.toLocaleString()}`);
+  lines.push(`總包數：${sorted.reduce((s,[,v])=>s+v.qty,0)} 包`);
+  navigator.clipboard.writeText(lines.join('
+')).then(()=>{
+    const m=document.getElementById('copied-vendor');m.style.display='block';
+    setTimeout(()=>m.style.display='none',2500);
+  });
+}
+
+function updateSummary(){
+  const total=orders.reduce((s,o)=>s+o.total,0);
+  document.getElementById('s-count').textContent=orders.length+' 人';
+  document.getElementById('s-total').textContent=total>0?'$'+total.toLocaleString():'$0';
+  const gap=document.getElementById('gap-msg');
+  if(!orders.length){gap.textContent='尚無訂單';gap.className='gap-msg gap-warn';}
+  else if(total>=1800){gap.textContent='宅配免運達標！';gap.className='gap-msg gap-ok';}
+  else if(total>=800){gap.innerHTML=`7-11 免運達標！宅配還差 $${(1800-total).toLocaleString()}`;gap.className='gap-msg gap-ok';}
+  else{gap.innerHTML=`7-11 免運還差 $${(800-total).toLocaleString()}`;gap.className='gap-msg gap-warn';}
+  document.getElementById('p7').style.width=Math.min(100,Math.round(total/800*100))+'%';
+  document.getElementById('ph').style.width=Math.min(100,Math.round(total/1800*100))+'%';
+  document.getElementById('p7-lbl').textContent='$'+total.toLocaleString()+' / $800';
+  document.getElementById('ph-lbl').textContent='$'+total.toLocaleString()+' / $1,800';
+}
+
+function copyAll(){
+  if(!orders.length){alert('尚無訂單');return;}
+  const total=orders.reduce((s,o)=>s+o.total,0);
+  const lines=['【原味千尋 團購收單】\n'];
+  if(pools.length){
+    lines.push('── 共購分包 ──');
+    pools.forEach(pool=>{
+      const pr=PRODUCTS[pool.pid],totalU=poolTotalUnits(pool);
+      lines.push(`${pr.name} ×${pool.qty}包（$${(pr.price*(pool.qty||1)).toLocaleString()}，共${totalU}個）`);
+      pool.slots.forEach(sl=>lines.push(`  ${sl.name}：${sl.take}個 → $${slotCost(pool,sl)}`));
+      const rem=poolRemain(pool);
+      if(rem>0)lines.push(`  ⚠ 剩餘 ${rem} 個未認領`);
+    });
+    lines.push('');
+  }
+  lines.push('── 個人訂單 ──');
+  orders.forEach(o=>{
+    lines.push(`${o.name}（${o.pickup==='711'?'7-11':'宅配'}）：`);
+    (o.items||[]).forEach(it=>lines.push(`  ${it.product} ×${it.qty}${it.split>1?`（${it.split}人分）`:''} $${it.subtotal}`));
+    (o.poolItems||[]).forEach(it=>lines.push(`  ${it.product} ×${it.take}個（共購） $${it.subtotal}`));
+    if(o.note)lines.push(`  備註：${o.note}`);
+    lines.push(`  應付：$${o.total.toLocaleString()}\n`);
+  });
+  lines.push('合計：$'+total.toLocaleString());
+  if(total>=1800)lines.push('✓ 宅配免運達標');
+  else if(total>=800)lines.push(`✓ 7-11 免運達標，宅配還差 $${1800-total}`);
+  else lines.push(`7-11 免運還差 $${800-total}`);
+  navigator.clipboard.writeText(lines.join('\n')).then(()=>{
+    const m=document.getElementById('copied');m.style.display='block';
+    setTimeout(()=>m.style.display='none',2500);
+  });
+}
+
+buildProdOpts(document.getElementById('new-pid'));
+refreshAll();
+</script>
+</body>
+</html>
